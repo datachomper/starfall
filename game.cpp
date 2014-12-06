@@ -9,7 +9,6 @@
 
 #define FRAMERATE 60
 #define MS_PER_FRAME ((1.0/FRAMERATE)*1000)
-//#define MS_PER_FRAME 17
 #define WINDOW_HEIGHT 600
 #define WINDOW_WIDTH 300
 #define MAX_ACTORS 1000
@@ -59,8 +58,6 @@ int main(int argc, char **argv)
 			if (e.type == SDL_QUIT)
 				running = false;
 			if (e.type == SDL_MOUSEBUTTONDOWN) {
-				//printf("mouse x: %d y: %d\n", e.button.x, e.button.y);
-
 				/* Detect clicking on an actor */
 				for (int i = 0; i < MAX_ACTORS; i++) {
 					if (actor[i].enabled) {
@@ -70,7 +67,7 @@ int main(int argc, char **argv)
 						    (e.button.y <= (actor[i].rect.y + actor[i].rect.h))) {
 
 							actor[i].enabled = false;
-						    }
+						}
 					}
 				}
 			}
