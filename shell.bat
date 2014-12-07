@@ -1,3 +1,5 @@
 @echo off
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x64
-set "PATH=%cd%\SDL2-2.0.3\lib\x64\;%cd%\SDL2-2.0.3\include\;%PATH%"
+set "PATH=%cd%\lib\SDL2\x64\;%PATH%"
+set "LIB=%cd%\lib\SDL2\x64\;%LIB%"
+set "INCLUDE=%cd%\include\SDL2\;%INCLUDE%"

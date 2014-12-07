@@ -2,7 +2,8 @@
 /* Quick game for Ludum Dare #31 */
 /* Audio generated using BFXR http://www.bfxr.net/ */
 
-#include "SDL.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_ttf.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,6 +24,7 @@ int main(int argc, char **argv)
 	SDL_Window *window;
 	SDL_Surface *surface;
 	SDL_Surface *image;
+	SDL_Renderer *renderer;
 
 	if (SDL_Init(SDL_INIT_VIDEO)) {
 		fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
@@ -39,14 +41,28 @@ int main(int argc, char **argv)
 	}
 
 	surface = SDL_GetWindowSurface(window);
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
 	/* Set background to black */
 	SDL_FillRect(surface, &surface->clip_rect, 0);
 
-	/* TODO temp make a star and move it */
 	int velocity = 1; // Star falling speed in pixels/second
 	Actor *actor = (Actor *)malloc(sizeof(actor[0]) * MAX_ACTORS);
 	memset(actor, 0, sizeof(actor[0]) * MAX_ACTORS);
+
+	/* Setup text writing */
+	TTF_Init();
+	TTF_Font *font = TTF_OpenFont("impact.ttf", 12);
+	if (!font) {
+		printf("font: %s\n", TTF_GetError());
+	}
+
+	/* Setup score display */
+	unsigned int score = 0;
+	char score_text[256];
+	SDL_Color grey = {200, 200, 200};
+	SDL_Rect score_rect = {0, 0, 100, 20};
+
 
 	bool running = true;
 	while (running) {
@@ -67,6 +83,7 @@ int main(int argc, char **argv)
 						    (e.button.y <= (actor[i].rect.y + actor[i].rect.h))) {
 
 							actor[i].enabled = false;
+							score++;
 						}
 					}
 				}
@@ -90,21 +107,31 @@ int main(int argc, char **argv)
 
 		/* Blank screen in prep for redraw */
 		/* TODO Maybe dim the old background to make a smear effect */
-		SDL_FillRect(surface, &surface->clip_rect, 0);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xff);
+		SDL_RenderClear(renderer);
 
+		SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
 		for (int i = 0; i < MAX_ACTORS; i++) {
 			if (actor[i].enabled) {
 				if (actor[i].rect.y > WINDOW_HEIGHT) {
 					actor[i].enabled = false;
 				} else {
 					actor[i].rect.y += velocity;
-					SDL_FillRect(surface, &actor[i].rect, -1);
+					SDL_RenderFillRect(renderer, &actor[i].rect);
 				}
 			}
 		}
 
+		/* Adjust score and render */
+		sprintf(&score_text[0], "score: %d", score);
+		SDL_Surface *score = TTF_RenderText_Solid(font, score_text, grey);
+		SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, score);
+		SDL_RenderCopy(renderer, texture, NULL, &score_rect);
+		SDL_FreeSurface(score);
+		SDL_DestroyTexture(texture);
+
 		/* Render */
-		SDL_UpdateWindowSurface(window);
+		SDL_RenderPresent(renderer);
 
 		/* Sleep for any remaining time */
 		int sleeptime = start + MS_PER_FRAME - SDL_GetTicks();
