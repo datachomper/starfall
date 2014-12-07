@@ -1,6 +1,8 @@
 /* Copyright 2014 Russ Meyerriecks <datachomper@gmail.com> */
 /* Quick game for Ludum Dare #31 */
 /* Audio generated using BFXR http://www.bfxr.net/ */
+/* Soundtrack from http://en.wikipedia.org/wiki/File:Holst-_mars.ogg */
+/* Background based off http://commons.wikimedia.org/wiki/File:Nasa_blue_marble.jpg */
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"
@@ -40,11 +42,16 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	printf("rect size: %d\n", sizeof(SDL_Rect));
+
 	surface = SDL_GetWindowSurface(window);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-	/* Set background to black */
+	/* Set background to black + graphics */
 	SDL_FillRect(surface, &surface->clip_rect, 0);
+	SDL_Surface *earth = SDL_LoadBMP("earth.bmp");
+	SDL_Texture *earth_texture = SDL_CreateTextureFromSurface(renderer, earth);
+	SDL_FreeSurface(earth);
 
 	int velocity = 1; // Star falling speed in pixels/second
 	Actor *actor = (Actor *)malloc(sizeof(actor[0]) * MAX_ACTORS);
@@ -109,6 +116,8 @@ int main(int argc, char **argv)
 		/* TODO Maybe dim the old background to make a smear effect */
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xff);
 		SDL_RenderClear(renderer);
+		SDL_Rect earth_position = {0, 400, 300, 600};
+		SDL_RenderCopy(renderer, earth_texture, NULL, &earth_position);
 
 		SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
 		for (int i = 0; i < MAX_ACTORS; i++) {
