@@ -6,6 +6,7 @@
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"
+#include "SDL2/SDL_mixer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,10 +32,22 @@ int main(int argc, char **argv)
 	SDL_Surface *image;
 	SDL_Renderer *renderer;
 
-	if (SDL_Init(SDL_INIT_VIDEO)) {
+	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO)) {
 		fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
 		return 1;
 	}
+
+	TTF_Init();
+	TTF_Font *font = TTF_OpenFont("impact.ttf", 12);
+	if (!font) {
+		printf("font: %s\n", TTF_GetError());
+	}
+
+	//Mix_Init();
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+	Mix_Chunk *explosion = Mix_LoadWAV("explosion.wav");
+	Mix_Music *music = Mix_LoadMUS("mars.ogg");
+	Mix_PlayMusic(music, -1);
 
 	window = SDL_CreateWindow("starfall",
 				  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -64,12 +77,6 @@ int main(int argc, char **argv)
 	int velocity = 1; // Star falling speed in pixels/second
 	Actor *actor = (Actor *)malloc(sizeof(actor[0]) * MAX_ACTORS);
 
-	/* Setup text writing */
-	TTF_Init();
-	TTF_Font *font = TTF_OpenFont("impact.ttf", 12);
-	if (!font) {
-		printf("font: %s\n", TTF_GetError());
-	}
 
 	/* Setup score display */
 	unsigned int score = 0;
@@ -107,6 +114,7 @@ int main(int argc, char **argv)
 
 								actor[i].enabled = false;
 								score++;
+								Mix_PlayChannel(-1, explosion, 0);
 							}
 						}
 					}
