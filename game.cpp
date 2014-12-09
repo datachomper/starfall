@@ -73,9 +73,9 @@ int main(int argc, char **argv)
 	SDL_Surface *earth = SDL_LoadBMP("earth.bmp");
 	SDL_Texture *earth_texture = SDL_CreateTextureFromSurface(renderer, earth);
 	SDL_FreeSurface(earth);
-	SDL_Rect earth_position = {0, 400, 300, 600};
+	SDL_Rect earth_position = {0, 380, 300, 600};
 
-	float velocity = 1.0; // Star falling speed in pixels/second
+	float velocity = 2.0; // Star falling speed in pixels/second
 	Actor *actor = (Actor *)malloc(sizeof(actor[0]) * MAX_ACTORS);
 
 	int game_over_debounce;
@@ -83,8 +83,8 @@ int main(int argc, char **argv)
 	/* Setup score display */
 	unsigned int score = 0;
 	char score_text[256];
-	SDL_Color grey = {200, 200, 200};
-	SDL_Rect score_rect = {0, 0, 100, 20};
+	SDL_Color white = {255, 255, 255};
+	SDL_Rect score_rect = {0, WINDOW_HEIGHT-20, WINDOW_WIDTH, 20};
 
 	Gamestate gamestate = TITLE_INTRO;
 
@@ -146,14 +146,14 @@ int main(int argc, char **argv)
 			hits = 0;
 			score = 0;
 			memset(actor, 0, sizeof(actor[0]) * MAX_ACTORS);
-			velocity = 1.0;
+			velocity = 2.0;
 		} else if (gamestate == PLAY_TRANSITION) {
 			/* Put neat title to playing animation effect here */
 			Mix_FadeInMusicPos(music, -1, 500, 84);
 			gamestate = PLAYING;
 		} else if (gamestate == PLAYING) {
 			/* Should we spawn actor this frame? */
-			if ((rand() % 60) == 30) {
+			if ((rand() % 30) == 10) {
 				/* Find the first free actor in the array */
 				for (int i = 0; i < MAX_ACTORS; i++) {
 					if (!actor[i].enabled) {
@@ -192,8 +192,12 @@ int main(int argc, char **argv)
 			velocity += 0.001;
 
 			/* Adjust score and render */
-			sprintf(&score_text[0], "score: %d", score);
-			SDL_Surface *score = TTF_RenderText_Solid(font, score_text, grey);
+			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xff);
+			SDL_Rect score_bg = {0, WINDOW_HEIGHT-20, WINDOW_WIDTH, 20};
+			SDL_RenderFillRect(renderer, &score_bg);
+
+			sprintf(&score_text[0], "score: %d        shield: %d", score, 3-hits);
+			SDL_Surface *score = TTF_RenderText_Solid(font, score_text, white);
 			SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, score);
 			SDL_RenderCopy(renderer, texture, NULL, &score_rect);
 			SDL_FreeSurface(score);
@@ -206,7 +210,7 @@ int main(int argc, char **argv)
 			/* Freeze game & display game over message */
 			char text[256] = "Game Over";
 			SDL_Rect rect = {0, WINDOW_HEIGHT/2, WINDOW_WIDTH, 20};
-			SDL_Surface *a = TTF_RenderText_Solid(font, text, grey);
+			SDL_Surface *a = TTF_RenderText_Solid(font, text, white);
 			SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, a);
 			SDL_RenderCopy(renderer, texture, NULL, &rect);
 			SDL_FreeSurface(a);
