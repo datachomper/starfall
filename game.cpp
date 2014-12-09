@@ -23,7 +23,7 @@ struct Actor {
 	SDL_Rect rect;
 };
 
-enum Gamestate { TITLE_INTRO,TITLE, PLAY_TRANSITION, PLAYING, GAME_OVER };
+enum Gamestate { TITLE_INTRO,TITLE, PLAY_TRANSITION, PLAYING, GAME_OVER_TRANSITION, GAME_OVER };
 
 int main(int argc, char **argv)
 {
@@ -46,6 +46,7 @@ int main(int argc, char **argv)
 	//Mix_Init();
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 	Mix_Chunk *explosion = Mix_LoadWAV("explosion.wav");
+	Mix_VolumeChunk(explosion, MIX_MAX_VOLUME/10);
 	Mix_Music *music = Mix_LoadMUS("mars.ogg");
 	Mix_PlayMusic(music, -1);
 
@@ -74,9 +75,10 @@ int main(int argc, char **argv)
 	SDL_FreeSurface(earth);
 	SDL_Rect earth_position = {0, 400, 300, 600};
 
-	int velocity = 1; // Star falling speed in pixels/second
+	float velocity = 1.0; // Star falling speed in pixels/second
 	Actor *actor = (Actor *)malloc(sizeof(actor[0]) * MAX_ACTORS);
 
+	int game_over_debounce;
 
 	/* Setup score display */
 	unsigned int score = 0;
@@ -120,7 +122,8 @@ int main(int argc, char **argv)
 					}
 
 				} else if (gamestate == GAME_OVER) {
-					gamestate = TITLE;
+					if (game_over_debounce < SDL_GetTicks())
+						gamestate = TITLE;
 				}
 			}
 		}
@@ -143,8 +146,10 @@ int main(int argc, char **argv)
 			hits = 0;
 			score = 0;
 			memset(actor, 0, sizeof(actor[0]) * MAX_ACTORS);
+			velocity = 1.0;
 		} else if (gamestate == PLAY_TRANSITION) {
 			/* Put neat title to playing animation effect here */
+			Mix_FadeInMusicPos(music, -1, 500, 84);
 			gamestate = PLAYING;
 		} else if (gamestate == PLAYING) {
 			/* Should we spawn actor this frame? */
@@ -175,7 +180,7 @@ int main(int argc, char **argv)
 						actor[i].enabled = false;
 						if (++hits >= 3) {
 							/* Game over condition */
-							gamestate = GAME_OVER;
+							gamestate = GAME_OVER_TRANSITION;
 						}
 					} else {
 						actor[i].rect.y += velocity;
@@ -184,6 +189,8 @@ int main(int argc, char **argv)
 				}
 			}
 
+			velocity += 0.001;
+
 			/* Adjust score and render */
 			sprintf(&score_text[0], "score: %d", score);
 			SDL_Surface *score = TTF_RenderText_Solid(font, score_text, grey);
@@ -191,7 +198,10 @@ int main(int argc, char **argv)
 			SDL_RenderCopy(renderer, texture, NULL, &score_rect);
 			SDL_FreeSurface(score);
 			SDL_DestroyTexture(texture);
-
+		} else if (gamestate == GAME_OVER_TRANSITION) {
+			Mix_FadeInMusicPos(music, 1, 500, 464);
+			gamestate = GAME_OVER;
+			game_over_debounce = SDL_GetTicks() + 2000;
 		} else if (gamestate == GAME_OVER) {
 			/* Freeze game & display game over message */
 			char text[256] = "Game Over";
