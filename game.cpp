@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 	Gamestate gamestate = TITLE_INTRO;
 
 	int hits = 0;
-	SDL_Rect earth_pos = {0, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT};
+	SDL_Rect earth_pos = {0, WINDOW_HEIGHT-210, WINDOW_WIDTH, WINDOW_HEIGHT};
 
 	bool running = true;
 	while (running) {
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
 
 				} else if (gamestate == GAME_OVER) {
 					if (game_over_debounce < SDL_GetTicks())
-						gamestate = TITLE;
+						gamestate = TITLE_INTRO;
 				}
 			}
 		}
@@ -149,8 +149,15 @@ int main(int argc, char **argv)
 			velocity = 2.0;
 		} else if (gamestate == PLAY_TRANSITION) {
 			/* Put neat title to playing animation effect here */
-			Mix_FadeInMusicPos(music, -1, 500, 84);
-			gamestate = PLAYING;
+			/* Scroll earth from top to bottom */
+			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xff);
+			SDL_RenderClear(renderer);
+			if ((earth_pos.y += 4) <= (WINDOW_HEIGHT-210)) {
+				SDL_RenderCopy(renderer, title_texture, NULL, &earth_pos);
+			} else {
+				Mix_FadeInMusicPos(music, -1, 500, 84);
+				gamestate = PLAYING;
+			}
 		} else if (gamestate == PLAYING) {
 			/* Should we spawn actor this frame? */
 			if ((rand() % 30) == 10) {
