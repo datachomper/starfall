@@ -1,3 +1,3 @@
-<img src="gameplay.PNG">
-<img src="gameover.PNG">
-<img src="title.PNG">
+![Alt text](gameplay.PNG)
+![Alt text](gameover.PNG)
+![Alt text](title.PNG)
