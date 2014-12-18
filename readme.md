@@ -1,3 +1,3 @@
-![Alt text](gameplay.PNG)
-![Alt text](gameover.PNG)
-![Alt text](title.PNG)
+![Alt text](gameplay.PNG?raw=true)
+![Alt text](gameover.PNG?raw=true)
+![Alt text](title.PNG?raw=true)
